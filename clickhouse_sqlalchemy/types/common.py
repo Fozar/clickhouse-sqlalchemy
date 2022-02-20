@@ -1,4 +1,4 @@
-from sqlalchemy.sql import sqltypes
+from sqlalchemy.sql import sqltypes, operators
 from sqlalchemy.sql.type_api import to_instance
 from sqlalchemy import types, func
 
@@ -152,7 +152,7 @@ class Tuple(ClickHouseTypeEngine):
         super(Tuple, self).__init__()
 
 
-class Map(ClickHouseTypeEngine):
+class Map(sqltypes.Indexable, ClickHouseTypeEngine):
     __visit_name__ = 'map'
 
     def __init__(self, key_type, value_type):
@@ -171,6 +171,13 @@ class Map(ClickHouseTypeEngine):
             value_type_impl = value_type
         self.value_type_impl = value_type_impl
         super(Map, self).__init__()
+
+    class Comparator(sqltypes.Indexable.Comparator):
+
+        def _setup_getitem(self, index):
+            return operators.getitem, index, self.type.value_type
+
+    comparator_factory = Comparator
 
     def bind_expression(self, bindparam):
         return func.map(bindparam, type_=self)

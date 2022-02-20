@@ -231,6 +231,12 @@ class ClickHouseSQLCompiler(compiler.SQLCompiler):
                 **kw
             )
 
+    def visit_getitem_binary(self, binary, operator, **kw):
+        return "%s[%s]" % (
+            self.process(binary.left, **kw),
+            self.process(binary.right, **kw),
+        )
+
     def _compose_select_body(
         self,
         text,
