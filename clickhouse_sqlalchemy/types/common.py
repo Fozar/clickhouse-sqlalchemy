@@ -183,14 +183,24 @@ class Map(sqltypes.Indexable, ClickHouseTypeEngine):
         return func.map(bindparam, type_=self)
 
     def bind_processor(self, dialect):
-        key_processor = self.key_type_impl.dialect_impl(dialect).bind_processor(dialect)
-        value_processor = self.value_type_impl.dialect_impl(dialect).bind_processor(dialect)
+        key_processor = self.key_type_impl.dialect_impl(dialect).bind_processor(
+            dialect
+        )
+        value_processor = self.value_type_impl.dialect_impl(
+            dialect
+        ).bind_processor(dialect)
 
         def process(map_):
             processed_map = {}
             for key, value in map_.items():
-                processed_key = key_processor(key) if key_processor is not None else key
-                processed_value = value_processor(value) if value_processor is not None else value
+                processed_key = (
+                    key_processor(key) if key_processor is not None else key
+                )
+                processed_value = (
+                    value_processor(value)
+                    if value_processor is not None
+                    else value
+                )
                 processed_map[processed_key] = processed_value
             return processed_map
 

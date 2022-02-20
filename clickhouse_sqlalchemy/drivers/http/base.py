@@ -18,23 +18,29 @@ class _HTTPMap(types.Map):
         return bindparam
 
     def result_processor(self, dialect, coltype):
-        key_processor = self.key_type_impl.dialect_impl(dialect).result_processor(
-            dialect, str(self.key_type_impl)
-        )
-        value_processor = self.value_type_impl.dialect_impl(dialect).result_processor(
-            dialect, str(self.value_type_impl)
-        )
+        key_processor = self.key_type_impl.dialect_impl(
+            dialect
+        ).result_processor(dialect, str(self.key_type_impl))
+        value_processor = self.value_type_impl.dialect_impl(
+            dialect
+        ).result_processor(dialect, str(self.value_type_impl))
 
         def process(value):
             parsed_map = ast.literal_eval(value)
             if not isinstance(parsed_map, dict):
-                raise ValueError("Failed to parse map. Type mismatch: " + parsed_map)
+                raise ValueError(
+                    "Failed to parse map. Type mismatch: " + parsed_map
+                )
 
             processed_map = {}
             for key, value in parsed_map.items():
-                processed_key = key_processor(key) if key_processor is not None else key
+                processed_key = (
+                    key_processor(key) if key_processor is not None else key
+                )
                 processed_value = (
-                    value_processor(value) if value_processor is not None else value
+                    value_processor(value)
+                    if value_processor is not None
+                    else value
                 )
                 processed_map[processed_key] = processed_value
 
