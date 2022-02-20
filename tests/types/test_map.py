@@ -31,7 +31,9 @@ class MapCompilationTestCase(CompilationTestCase):
                 Table(
                     "test",
                     CompilationTestCase.metadata(),
-                    Column("x", types.Map(key_type, value_type), primary_key=True),
+                    Column(
+                        "x", types.Map(key_type, value_type), primary_key=True
+                    ),
                     engines.Memory(),
                 )
             )
@@ -42,7 +44,9 @@ class MapCompilationTestCase(CompilationTestCase):
         for table in self.generate_tables():
             compiled_key_type = str(table.c.x.type.key_type_impl)
             compiled_value_type = str(table.c.x.type.value_type_impl)
-            compiled_map_type = f"Map({compiled_key_type}, {compiled_value_type})"
+            compiled_map_type = (
+                f"Map({compiled_key_type}, {compiled_value_type})"
+            )
             self.assertEqual(
                 self.compile(CreateTable(table)),
                 f"CREATE TABLE test (x {compiled_map_type}) ENGINE = Memory",
@@ -79,4 +83,6 @@ class MapTestCase(BaseTestCase):
 
         with self.create_table(self.table):
             self.session.execute(self.table.insert(), [{"x": map_}])
-            self.assertEqual(self.session.query(self.table.c.x["b"]).scalar(), 2)
+            self.assertEqual(
+                self.session.query(self.table.c.x["b"]).scalar(), 2
+            )
