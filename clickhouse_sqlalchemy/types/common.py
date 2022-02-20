@@ -183,9 +183,9 @@ class Map(sqltypes.Indexable, ClickHouseTypeEngine):
         return func.map(bindparam, type_=self)
 
     def bind_processor(self, dialect):
-        key_processor = self.key_type_impl.dialect_impl(dialect).bind_processor(
+        key_processor = self.key_type_impl.dialect_impl(
             dialect
-        )
+        ).bind_processor(dialect)
         value_processor = self.value_type_impl.dialect_impl(
             dialect
         ).bind_processor(dialect)
