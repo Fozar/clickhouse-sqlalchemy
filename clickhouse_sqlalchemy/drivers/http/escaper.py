@@ -49,6 +49,16 @@ class Escaper(object):
     def escape_decimal(self, item):
         return float(item)
 
+    def escape_dict(self, item):
+        return "map(%s)" % (
+            ", ".join(
+                (
+                    "%s, %s" % (self.escape_item(key), self.escape_item(value))
+                    for key, value in item.items()
+                )
+            )
+        )
+
     def escape_item(self, item):
         if item is None:
             return 'NULL'
@@ -66,6 +76,8 @@ class Escaper(object):
             return "[" + ", ".join(
                 [str(self.escape_item(x)) for x in item]
             ) + "]"
+        elif isinstance(item, dict):
+            return self.escape_dict(item)
         elif isinstance(item, enum.Enum):
             return self.escape_string(item.name)
         else:

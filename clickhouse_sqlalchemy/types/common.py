@@ -1,5 +1,6 @@
+from sqlalchemy.sql import sqltypes
 from sqlalchemy.sql.type_api import to_instance
-from sqlalchemy import types
+from sqlalchemy import types, func
 
 
 class ClickHouseTypeEngine(types.TypeEngine):
@@ -157,4 +158,33 @@ class Map(ClickHouseTypeEngine):
     def __init__(self, key_type, value_type):
         self.key_type = key_type
         self.value_type = value_type
+
+        if isinstance(key_type, type):
+            key_type_impl = key_type()
+        else:
+            key_type_impl = key_type
+        self.key_type_impl = key_type_impl
+
+        if isinstance(value_type, type):
+            value_type_impl = value_type()
+        else:
+            value_type_impl = value_type
+        self.value_type_impl = value_type_impl
         super(Map, self).__init__()
+
+    def bind_expression(self, bindparam):
+        return func.map(bindparam, type_=self)
+
+    def bind_processor(self, dialect):
+        key_processor = self.key_type_impl.dialect_impl(dialect).bind_processor(dialect)
+        value_processor = self.value_type_impl.dialect_impl(dialect).bind_processor(dialect)
+
+        def process(map_):
+            processed_map = {}
+            for key, value in map_.items():
+                processed_key = key_processor(key) if key_processor is not None else key
+                processed_value = value_processor(value) if value_processor is not None else value
+                processed_map[processed_key] = processed_value
+            return processed_map
+
+        return process
